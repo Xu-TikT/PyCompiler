@@ -33,4 +33,13 @@ public class CallBackClass {
         Object d3 = PythonClass._Call("dumps", data1, MainActivity.Host.SrvGroup._NewParaPkg("sort_keys", true, "indent", 4)._AsDict(true));
         System.out.println("" + d3);
     }
+
+    public int faceDeceted(){
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return 20;
+    }
 }

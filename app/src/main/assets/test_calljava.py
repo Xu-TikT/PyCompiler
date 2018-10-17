@@ -6,5 +6,7 @@ print(JavaClass)
 val = JavaClass("from python")
 val.callback(1234.4564)
 val.callback("sdfsdfsdfsdf")
-val.SetPythonObject(json);
+val.SetPythonObject(json)
+str = val.faceDeceted()
+print('str:'+str)
 print("===========end=========")

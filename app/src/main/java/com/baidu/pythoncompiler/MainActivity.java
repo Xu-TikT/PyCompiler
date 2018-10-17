@@ -1,8 +1,8 @@
 package com.baidu.pythoncompiler;
 
 import android.app.Activity;
-import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.view.View;
 
 import com.srplab.www.starcore.StarCoreFactory;
 import com.srplab.www.starcore.StarCoreFactoryPath;
@@ -11,40 +11,15 @@ import com.srplab.www.starcore.StarServiceClass;
 import com.srplab.www.starcore.StarSrvGroupClass;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class MainActivity extends Activity {
 
 
     public static MainActivity Host;
     public StarSrvGroupClass SrvGroup;
+    private StarObjectClass python;
+    private StarServiceClass service;
 
-    private void copyFile(Activity c, String Name, String desPath) throws IOException {
-        File outfile = null;
-        if (desPath != null)
-            outfile = new File("/data/data/" + getPackageName() + "/files/" + desPath + Name);
-        else
-            outfile = new File("/data/data/" + getPackageName() + "/files/" + Name);
-        //if (!outfile.exists()) {
-        outfile.createNewFile();
-        FileOutputStream out = new FileOutputStream(outfile);
-        byte[] buffer = new byte[1024];
-        InputStream in;
-        int readLen = 0;
-        if (desPath != null)
-            in = c.getAssets().open(desPath + Name);
-        else
-            in = c.getAssets().open(Name);
-        while ((readLen = in.read(buffer)) != -1) {
-            out.write(buffer, 0, readLen);
-        }
-        out.flush();
-        in.close();
-        out.close();
-        //}
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,38 +34,40 @@ public class MainActivity extends Activity {
         java.io.File python2_7_libFile = new java.io.File("/data/data/" + getPackageName() + "/files/python3.4.zip");
         if (!python2_7_libFile.exists()) {
             try {
-                copyFile(this, "python3.4.zip", null);
+                PyCompileUtils.copyFile(this, "python3.4.zip", null);
             } catch (Exception e) {
             }
         }
         try {
-            copyFile(this, "_struct.cpython-34m.so", null);
-            copyFile(this, "binascii.cpython-34m.so", null);
-            copyFile(this, "time.cpython-34m.so", null);
-            copyFile(this, "zlib.cpython-34m.so", null);
+            PyCompileUtils.copyFile(this, "_struct.cpython-34m.so", null);
+            PyCompileUtils.copyFile(this, "binascii.cpython-34m.so", null);
+            PyCompileUtils.copyFile(this, "time.cpython-34m.so", null);
+            PyCompileUtils.copyFile(this, "zlib.cpython-34m.so", null);
         } catch (Exception e) {
             System.out.println(e);
         }
         //----a test file to be read using python, we copy it to files directory
         try {
-            copyFile(this, "test.txt", "");
-            copyFile(this, "test_calljava.py", "");
+            PyCompileUtils.copyFile(this, "test.txt", "");
+            PyCompileUtils.copyFile(this, "test_calljava.py", "");
+            PyCompileUtils.copyFile(this, "thc_calljava.py", "");
+
         } catch (Exception e) {
             System.out.println(e);
         }
         /*----load test.py----*/
-        String pystring = null;
-        try {
-            AssetManager assetManager = getAssets();
-            InputStream dataSource = assetManager.open("test.py");
-            int size = dataSource.available();
-            byte[] buffer = new byte[size];
-            dataSource.read(buffer);
-            dataSource.close();
-            pystring = new String(buffer);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
+//        String pystring = null;
+//        try {
+//            AssetManager assetManager = getAssets();
+//            InputStream dataSource = assetManager.open("test.py");
+//            int size = dataSource.available();
+//            byte[] buffer = new byte[size];
+//            dataSource.read(buffer);
+//            dataSource.close();
+//            pystring = new String(buffer);
+//        } catch (IOException e) {
+//            System.out.println(e);
+//        }
 
         try {
             //--load python34 core library first;
@@ -105,13 +82,14 @@ public class MainActivity extends Activity {
         StarCoreFactoryPath.StarCoreOperationPath = "/data/data/" + getPackageName() + "/files";
 
         StarCoreFactory starcore = StarCoreFactory.GetFactory();
-        StarServiceClass Service = starcore._InitSimple("test", "123", 0, 0);
-        SrvGroup = (StarSrvGroupClass) Service._Get("_ServiceGroup");
-        Service._CheckPassword(false);
+        service = starcore._InitSimple("test", "123", 0, 0);
+        SrvGroup = (StarSrvGroupClass) service._Get("_ServiceGroup");
+        service._CheckPassword(false);
 
 		/*----run python code----*/
-        SrvGroup._InitRaw("python34", Service);//调用函数"_InitRaw"初始化python接口
-        StarObjectClass python = Service._ImportRawContext("python", "", false, "");//使用函数"_ImportRawContext("python","",false,nil);"获取python全局原生对象,python类
+        SrvGroup._InitRaw("python34", service);//调用函数"_InitRaw"初始化python接口
+        //使用函数"_ImportRawContext("python","",false,nil);"获取python全局原生对象,python类
+        python = service._ImportRawContext("python", "", false, "");
         python._Call("import", "sys");
 
         StarObjectClass pythonSys = python._GetObject("sys");
@@ -120,12 +98,89 @@ public class MainActivity extends Activity {
         pythonPath._Call("insert", 0, this.getApplicationInfo().nativeLibraryDir);
         pythonPath._Call("insert", 0, "/data/data/" + getPackageName() + "/files");
 
-        python._Call("execute", pystring);//使用函数"XX._Call("funcname",...)"或者"XX._Get/_Set("Variable")"调用python函数,设置/获取python变量数值
-        python._Call("testread", "/data/data/" + getPackageName() + "/files/test.txt");
+//        python._Call("execute", pystring);//使用函数"XX._Call("funcname",...)"或者"XX._Get/_Set("Variable")"调用python函数,设置/获取python变量数值
+//        python._Call("testread", "/data/data/" + getPackageName() + "/files/test.txt");
+//        String CorePath = "/data/data/" + getPackageName() + "/files";
+//        python._Set("JavaClass", CallBackClass.class);
+//        service._DoFile("python", CorePath + "/test_calljava.py", "");
+    }
 
+    /**
+     * python 调用 Java
+     *
+     * 步骤说明：
+     * 1. 将要执行的py代码copy到本地某个目录下
+     * 2. 给py代码设置调用java回调类 JavaClass
+     * 3. service_DoFile(xxx)
+     * 即可执行python脚本，并调用Java类内容
+     *
+     * @param view
+     */
+    public void pyCallJava(View view) {
         String CorePath = "/data/data/" + getPackageName() + "/files";
         python._Set("JavaClass", CallBackClass.class);
-        Service._DoFile("python", CorePath + "/test_calljava.py", "");
+        service._DoFile("python", CorePath + "/test_calljava.py", "");
+    }
+
+    private String pyCode = "def logMsg(msg):\n" +
+            "    print(msg)";
+    private String pyCode1 = "if 0 != 1:\n" +
+            "  print('-------------thc11111')";
+
+    private String pyCode2 = "def testread(name) :\n" +
+            "    text_file = open(name, \"rt\")\n" +
+            "    print(text_file.readline())\n" +
+            "    text_file.close()";
+
+    /**
+     * Java 调用 python
+     *
+     * 步骤说明：
+     * 1. 调用python._Call("execute",xxx);执行python代码
+     * 2. 然后就可以通过python._Call("xxx方法名",参数...)来调用python代码中的方法了
+     *
+     * @param view
+     */
+    public void javaCallPy(View view) {
+        python._Call("execute", pyCode);
+        python._Call("testread", "/data/data/" + getPackageName() + "/files/test.txt");
+        python._Call("logMsg", "从Java传到Python");
+    }
+
+    private String thcCallJava =
+            "import imp  #test load path\n" +
+                    "\n" +
+                    "import json\n" +
+                    "print(JavaClass)\n" +
+                    "\n" +
+                    "val = JavaClass(\"from python\")\n" +
+                    "\n" +
+                    "\n" +
+                    "print('执行人脸识别')\n" +
+                    "age = val.faceDeceted()\n" +
+                    "print(age)\n" +
+                    "\n" +
+                    "if age > 10:\n" +
+                    "  print('你很年轻哦')\n" +
+                    "else:\n" +
+                    "    print('没有进入',age)\n" +
+                    "\n" +
+                    "print(\"===========end=========\")";
+
+    /**
+     * 执行python代码(字符串的形式)，同时又可以调用Java内容
+     *
+     * 两种实现方式：
+     *
+     * 1. 下载后台代码写到本地，执行文件，如同pyCallJava
+     *
+     * 2. 设置Java回调类，直接运行String类型的Python代码
+     *
+     * @param view
+     */
+    public void javaAndPy(View view) {
+        python._Set("JavaClass", CallBackClass.class);
+        python._Call("execute",thcCallJava);
     }
 
 
