@@ -1,7 +1,11 @@
 package com.baidu.pythoncompiler;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 
 import com.srplab.www.starcore.StarCoreFactory;
@@ -28,10 +32,41 @@ public class MainActivity extends Activity {
 
         Host = this;
 
+//        copyJar();
+//        initSrv();
+        bindService(new Intent(this,PyCompilerService.class),conn,BIND_AUTO_CREATE);
+
+    }
+
+    private void initSrv() {
+    /*----init starcore----*/
+        StarCoreFactoryPath.StarCoreCoreLibraryPath = this.getApplicationInfo().nativeLibraryDir;
+        StarCoreFactoryPath.StarCoreShareLibraryPath = this.getApplicationInfo().nativeLibraryDir;
+        StarCoreFactoryPath.StarCoreOperationPath = "/data/data/" + getPackageName() + "/files";
+
+        StarCoreFactory starcore = StarCoreFactory.GetFactory();
+        service = starcore._InitSimple("test", "123", 0, 0);
+        SrvGroup = (StarSrvGroupClass) service._Get("_ServiceGroup");
+        service._CheckPassword(false);
+
+		/*----run python code----*/
+        SrvGroup._InitRaw("python34", service);//调用函数"_InitRaw"初始化python接口
+        //使用函数"_ImportRawContext("python","",false,nil);"获取python全局原生对象,python类
+        python = service._ImportRawContext("python", "", false, "");
+        python._Call("import", "sys");
+
+        StarObjectClass pythonSys = python._GetObject("sys");
+        StarObjectClass pythonPath = (StarObjectClass) pythonSys._Get("path");
+        pythonPath._Call("insert", 0, "/data/data/" + getPackageName() + "/files/python3.4.zip");
+        pythonPath._Call("insert", 0, this.getApplicationInfo().nativeLibraryDir);
+        pythonPath._Call("insert", 0, "/data/data/" + getPackageName() + "/files");
+    }
+
+    private void copyJar() {
         File destDir = new File("/data/data/" + getPackageName() + "/files");
         if (!destDir.exists())
             destDir.mkdirs();
-        java.io.File python2_7_libFile = new java.io.File("/data/data/" + getPackageName() + "/files/python3.4.zip");
+        File python2_7_libFile = new File("/data/data/" + getPackageName() + "/files/python3.4.zip");
         if (!python2_7_libFile.exists()) {
             try {
                 PyCompileUtils.copyFile(this, "python3.4.zip", null);
@@ -55,19 +90,6 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             System.out.println(e);
         }
-        /*----load test.py----*/
-//        String pystring = null;
-//        try {
-//            AssetManager assetManager = getAssets();
-//            InputStream dataSource = assetManager.open("test.py");
-//            int size = dataSource.available();
-//            byte[] buffer = new byte[size];
-//            dataSource.read(buffer);
-//            dataSource.close();
-//            pystring = new String(buffer);
-//        } catch (IOException e) {
-//            System.out.println(e);
-//        }
 
         try {
             //--load python34 core library first;
@@ -75,34 +97,6 @@ public class MainActivity extends Activity {
         } catch (UnsatisfiedLinkError ex) {
             System.out.println(ex.toString());
         }
-
-        /*----init starcore----*/
-        StarCoreFactoryPath.StarCoreCoreLibraryPath = this.getApplicationInfo().nativeLibraryDir;
-        StarCoreFactoryPath.StarCoreShareLibraryPath = this.getApplicationInfo().nativeLibraryDir;
-        StarCoreFactoryPath.StarCoreOperationPath = "/data/data/" + getPackageName() + "/files";
-
-        StarCoreFactory starcore = StarCoreFactory.GetFactory();
-        service = starcore._InitSimple("test", "123", 0, 0);
-        SrvGroup = (StarSrvGroupClass) service._Get("_ServiceGroup");
-        service._CheckPassword(false);
-
-		/*----run python code----*/
-        SrvGroup._InitRaw("python34", service);//调用函数"_InitRaw"初始化python接口
-        //使用函数"_ImportRawContext("python","",false,nil);"获取python全局原生对象,python类
-        python = service._ImportRawContext("python", "", false, "");
-        python._Call("import", "sys");
-
-        StarObjectClass pythonSys = python._GetObject("sys");
-        StarObjectClass pythonPath = (StarObjectClass) pythonSys._Get("path");
-        pythonPath._Call("insert", 0, "/data/data/" + getPackageName() + "/files/python3.4.zip");
-        pythonPath._Call("insert", 0, this.getApplicationInfo().nativeLibraryDir);
-        pythonPath._Call("insert", 0, "/data/data/" + getPackageName() + "/files");
-
-//        python._Call("execute", pystring);//使用函数"XX._Call("funcname",...)"或者"XX._Get/_Set("Variable")"调用python函数,设置/获取python变量数值
-//        python._Call("testread", "/data/data/" + getPackageName() + "/files/test.txt");
-//        String CorePath = "/data/data/" + getPackageName() + "/files";
-//        python._Set("JavaClass", CallBackClass.class);
-//        service._DoFile("python", CorePath + "/test_calljava.py", "");
     }
 
     /**
@@ -182,6 +176,24 @@ public class MainActivity extends Activity {
         python._Set("JavaClass", CallBackClass.class);
         python._Call("execute",thcCallJava);
     }
+
+    PyCompilerService.MyBinder mBinder;
+    ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mBinder = (PyCompilerService.MyBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
+    public void runPyInService(View view){
+        mBinder.executePyCode(thcCallJava);
+    }
+
 
 
 }

@@ -35,4 +35,12 @@
         android:onClick="javaAndPy"
         android:text="java运行python调用java方法" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:onClick="runPyInService"
+        android:text="在Service中运行py" />
+
+
 </LinearLayout>

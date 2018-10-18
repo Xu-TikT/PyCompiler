@@ -1,6 +1,7 @@
 package com.baidu.pythoncompiler;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.srplab.www.starcore.StarObjectClass;
 import com.srplab.www.starcore.StarParaPkgClass;
@@ -34,9 +35,10 @@ public class CallBackClass {
         System.out.println("" + d3);
     }
 
-    public int faceDeceted(){
+    public int faceDeceted() {
         try {
             Thread.sleep(2000);
+            Toast.makeText(MainActivity.Host, "人脸检测返回成功", Toast.LENGTH_SHORT).show();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
