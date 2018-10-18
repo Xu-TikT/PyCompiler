@@ -207,6 +207,10 @@ public class MainActivity extends Activity {
             "  age = BlocklyJavascriptInterface.faceDeceted()\n" +
             "  print('Hello World!')";
 
+    /**
+     * 在Service中运行py
+     * @param view
+     */
     public void runPyInService(View view) {
         Message obtain = Message.obtain();
         Bundle bundle = new Bundle();
@@ -221,8 +225,10 @@ public class MainActivity extends Activity {
     }
 
 
-
-
+    /**
+     * 杀掉进程
+     * @param view
+     */
     public void finishProcess(View view) {
         Log.e(TAG, "杀死进程");
         killProcess("com.baidu.pythoncompiler.remote");
