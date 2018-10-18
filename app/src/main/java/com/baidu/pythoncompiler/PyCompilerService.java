@@ -1,9 +1,16 @@
 package com.baidu.pythoncompiler;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.util.Log;
 
 import com.srplab.www.starcore.StarCoreFactory;
 import com.srplab.www.starcore.StarCoreFactoryPath;
@@ -15,9 +22,15 @@ import java.io.File;
 
 public class PyCompilerService extends Service {
 
+    private static final String TAG = "PyCompilerService";
+
     public StarSrvGroupClass SrvGroup;
-    private StarObjectClass python;
+    private static StarObjectClass python;
     private StarServiceClass service;
+    static ServiceHandler serviceHandler = new ServiceHandler();
+
+
+    private Messenger messenger = new Messenger(serviceHandler);
 
     public PyCompilerService() {
 
@@ -26,22 +39,40 @@ public class PyCompilerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e(TAG,"packageName:\t" + getPackageName());
         copyJar();
         initSrv();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("killpython");
+        registerReceiver(new KillSelfReceiver(), intentFilter);
+    }
+
+    public class KillSelfReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "收到了杀死进程的广播");
+            SrvGroup._ClearService();
+            System.exit(0);
+        }
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return new MyBinder();
+//        return new MyBinder();
+        return messenger.getBinder();
     }
 
-    class MyBinder extends Binder{
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.e(TAG, "onUnbind");
+        return super.onUnbind(intent);
+    }
 
-        public void executePyCode(String code){
-            python._Set("JavaClass", CallBackClass.class);
-            python._Call("execute",code);
-        }
-
+    @Override
+    public void onDestroy() {
+        Log.e(TAG, "onDestroy");
+        super.onDestroy();
     }
 
     private void initSrv() {
@@ -102,6 +133,15 @@ public class PyCompilerService extends Service {
             System.load(this.getApplicationInfo().nativeLibraryDir + "/libpython3.4m.so");
         } catch (UnsatisfiedLinkError ex) {
             System.out.println(ex.toString());
+        }
+    }
+
+    static class ServiceHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            Log.e(TAG, "要执行的代码：\t" + msg.getData().getString("data"));
+            python._Set("JavaClass", CallBackClass.class);
+            python._Call("execute", msg.getData().getString("data"));
         }
     }
 }

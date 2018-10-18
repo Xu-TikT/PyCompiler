@@ -1,11 +1,17 @@
 package com.baidu.pythoncompiler;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 
 import com.srplab.www.starcore.StarCoreFactory;
@@ -15,10 +21,12 @@ import com.srplab.www.starcore.StarServiceClass;
 import com.srplab.www.starcore.StarSrvGroupClass;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
-
+    private static String TAG = "MainActivity";
     public static MainActivity Host;
     public StarSrvGroupClass SrvGroup;
     private StarObjectClass python;
@@ -32,8 +40,8 @@ public class MainActivity extends Activity {
 
         Host = this;
 
-        copyJar();
-        initSrv();
+//        copyJar();
+//        initSrv();
         bindService(new Intent(this, PyCompilerService.class), conn, BIND_AUTO_CREATE);
 
     }
@@ -174,35 +182,86 @@ public class MainActivity extends Activity {
      */
     public void javaAndPy(View view) {
         python._Set("JavaClass", CallBackClass.class);
-        python._Call("execute", thcCallJava);
+//        python._Call("execute", thcCallJava);
+        python._Call("execute", PyCodeFormat.buildPyCode(blocklyPyCode));
     }
 
-    PyCompilerService.MyBinder mBinder;
+    public void stopPyService(View view) {
+        SrvGroup._ClearService();
+    }
+
+    Messenger mClientMessenger = null;
     ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            mBinder = (PyCompilerService.MyBinder) service;
+            mClientMessenger = new Messenger(service);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            Log.e(TAG, "onServiceDisconnected");
         }
     };
 
-    private String blocklyPyCode = "print('执行人脸识别')\n" +
-            "age = BlocklyJavascriptInterface.faceDeceted()\n" +
-            "print(age)\n" +
-            "\n" +
-            "if 0 > 1:\n" +
-            "  print('你很年轻哦')\n" +
-            "else:\n" +
-            "    print('没有进入',age)\n" +
-            "\n" +
-            "print(\"===========end=========\")";
+    private String blocklyPyCode = "while 0 <= 3:\n" +
+            "  age = BlocklyJavascriptInterface.faceDeceted()\n" +
+            "  print('Hello World!')";
 
     public void runPyInService(View view) {
-        mBinder.executePyCode(PyCodeFormat.buildPyCode(blocklyPyCode));
+        Message obtain = Message.obtain();
+        Bundle bundle = new Bundle();
+        Log.e(TAG, "执行死循环代码");
+        bundle.putString("data", PyCodeFormat.buildPyCode(blocklyPyCode));
+        obtain.setData(bundle);
+        try {
+            mClientMessenger.send(obtain);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+    public void finishProcess(View view) {
+        Log.e(TAG, "杀死进程");
+        killProcess("com.baidu.pythoncompiler.remote");
+    }
+
+    private void killProcess(String killName) {
+        // 获取一个ActivityManager 对象
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        // 获取系统中所有正在运行的进程
+        List<ActivityManager.RunningAppProcessInfo> appProcessInfos = activityManager
+                .getRunningAppProcesses();
+        // 对系统中所有正在运行的进程进行迭代，如果进程名所要杀死的进程，则Kill掉
+        for (ActivityManager.RunningAppProcessInfo appProcessInfo : appProcessInfos) {
+            String processName = appProcessInfo.processName;
+            if (processName.equals(killName)) {
+                killProcessByPid(appProcessInfo.pid);
+            }
+        }
+    }
+
+    /**
+     * 根据要杀死的进程id执行Shell命令已达到杀死特定进程的效果
+     * @param pid
+     */
+    private void killProcessByPid(int pid) {
+        String command = "kill -9 " + pid + "\n";
+        Runtime runtime = Runtime.getRuntime();
+        Process proc;
+        try {
+            proc = runtime.exec(command);
+            if (proc.waitFor() != 0) {
+                System.err.println("exit value = " + proc.exitValue());
+            }
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (InterruptedException e) {
+            System.err.println(e);
+        }
     }
 
 
