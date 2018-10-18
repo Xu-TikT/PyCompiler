@@ -32,9 +32,9 @@ public class MainActivity extends Activity {
 
         Host = this;
 
-//        copyJar();
-//        initSrv();
-        bindService(new Intent(this,PyCompilerService.class),conn,BIND_AUTO_CREATE);
+        copyJar();
+        initSrv();
+        bindService(new Intent(this, PyCompilerService.class), conn, BIND_AUTO_CREATE);
 
     }
 
@@ -101,7 +101,7 @@ public class MainActivity extends Activity {
 
     /**
      * python 调用 Java
-     *
+     * <p>
      * 步骤说明：
      * 1. 将要执行的py代码copy到本地某个目录下
      * 2. 给py代码设置调用java回调类 JavaClass
@@ -128,7 +128,7 @@ public class MainActivity extends Activity {
 
     /**
      * Java 调用 python
-     *
+     * <p>
      * 步骤说明：
      * 1. 调用python._Call("execute",xxx);执行python代码
      * 2. 然后就可以通过python._Call("xxx方法名",参数...)来调用python代码中的方法了
@@ -163,18 +163,18 @@ public class MainActivity extends Activity {
 
     /**
      * 执行python代码(字符串的形式)，同时又可以调用Java内容
-     *
+     * <p>
      * 两种实现方式：
-     *
+     * <p>
      * 1. 下载后台代码写到本地，执行文件，如同pyCallJava
-     *
+     * <p>
      * 2. 设置Java回调类，直接运行String类型的Python代码
      *
      * @param view
      */
     public void javaAndPy(View view) {
         python._Set("JavaClass", CallBackClass.class);
-        python._Call("execute",thcCallJava);
+        python._Call("execute", thcCallJava);
     }
 
     PyCompilerService.MyBinder mBinder;
@@ -190,10 +190,20 @@ public class MainActivity extends Activity {
         }
     };
 
-    public void runPyInService(View view){
-        mBinder.executePyCode(thcCallJava);
-    }
+    private String blocklyPyCode = "print('执行人脸识别')\n" +
+            "age = BlocklyJavascriptInterface.faceDeceted()\n" +
+            "print(age)\n" +
+            "\n" +
+            "if 0 > 1:\n" +
+            "  print('你很年轻哦')\n" +
+            "else:\n" +
+            "    print('没有进入',age)\n" +
+            "\n" +
+            "print(\"===========end=========\")";
 
+    public void runPyInService(View view) {
+        mBinder.executePyCode(PyCodeFormat.buildPyCode(blocklyPyCode));
+    }
 
 
 }
