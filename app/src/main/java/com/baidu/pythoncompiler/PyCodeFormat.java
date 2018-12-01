@@ -8,7 +8,7 @@ public class PyCodeFormat {
 
     public static final String IMPORT = "import imp  #test load path";
     public static final String ENTER = "\n";
-    public static final String JAVA_CLASS = "BlocklyJavascriptInterface = JavaClass('from python')";
+    public static final String JAVA_CLASS = "BlocklyJavascriptInterface = JavaClass('init java callbackclass in python')";
 
     public static String buildPyCode(String pyCode){
         StringBuilder sb = new StringBuilder();

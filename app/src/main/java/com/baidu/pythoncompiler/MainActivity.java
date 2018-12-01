@@ -203,7 +203,7 @@ public class MainActivity extends Activity {
         }
     };
 
-    private String blocklyPyCode = "while 0 <= 3:\n" +
+    private String blocklyPyCode = "if 0 <= 3:\n" +
             "  age = BlocklyJavascriptInterface.faceDeceted()\n" +
             "  print('Hello World!')";
 

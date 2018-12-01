@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -29,6 +28,7 @@ public class PyCompilerService extends Service {
     private StarServiceClass service;
     static ServiceHandler serviceHandler = new ServiceHandler();
 
+    public static PyCompilerService Host;
 
     private Messenger messenger = new Messenger(serviceHandler);
 
@@ -39,12 +39,17 @@ public class PyCompilerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG,"packageName:\t" + getPackageName());
+        Host = this;
+        Log.e(TAG, "packageName:\t" + getPackageName());
         copyJar();
         initSrv();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("killpython");
         registerReceiver(new KillSelfReceiver(), intentFilter);
+
+        IntentFilter javaCalledByPy = new IntentFilter();
+        javaCalledByPy.addAction("javaCalledByPython");
+        registerReceiver(new JavaCalledByPyReceiver(), javaCalledByPy);
     }
 
     public class KillSelfReceiver extends BroadcastReceiver {
@@ -54,6 +59,16 @@ public class PyCompilerService extends Service {
             Log.e(TAG, "收到了杀死进程的广播");
             SrvGroup._ClearService();
             System.exit(0);
+        }
+    }
+
+
+    public class JavaCalledByPyReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int methodValue = intent.getIntExtra("methodValue", -1);
+            LogUtil.loge("收到广播 方法值：" + methodValue);
         }
     }
 
@@ -140,9 +155,10 @@ public class PyCompilerService extends Service {
         @Override
         public void handleMessage(Message msg) {
             Log.e(TAG, "要执行的代码：\t" + msg.getData().getString("data"));
-//            python._Set("JavaClass", CallBackClass.class);
             python._Set("JavaClass", CusCallback.class);
             python._Call("execute", msg.getData().getString("data"));
         }
     }
+
+
 }
