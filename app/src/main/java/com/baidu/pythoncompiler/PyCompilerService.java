@@ -157,6 +157,11 @@ public class PyCompilerService extends Service {
             Log.e(TAG, "要执行的代码：\t" + msg.getData().getString("data"));
             python._Set("JavaClass", CusCallback.class);
             python._Call("execute", msg.getData().getString("data"));
+            Object getastErrorInfo = python._Call("GetastErrorInfo");
+            python._GetLastError();
+            int i = python._GetActiveCmd();
+            String s = python._GetLastErrorInfo();
+            LogUtil.loge(s);
         }
     }
 
