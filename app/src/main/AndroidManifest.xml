@@ -26,7 +26,10 @@
             android:name=".PyCompilerService"
             android:enabled="true"
             android:exported="true"
-            android:process="com.baidu.pythoncompiler.remote"></service>
+            android:process="com.baidu.pythoncompiler.remote"/>
+        <activity android:name=".tset.TouchEventActivity">
+
+        </activity>
     </application>
 
 </manifest>

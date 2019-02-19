@@ -203,15 +203,60 @@ public class MainActivity extends Activity {
         }
     };
 
-    private String blocklyPyCode = "if 0 <= 3:\n" +
-            "  age = BlocklyJavascriptInterface.faceDeceted()\n" +
-            "  print('Hello World!')";
+//    private String blocklyPyCode = "if 0 <= 3:\n" +
+//            "  print()\n"+
+//            "  age = BlocklyJavascriptInterface.faceDeceted(1)\n" +
+//            "  arrs = [1,2,3]\n" +
+//            "  print('thc')\n" +
+//            "  print(arrs[5])\n" +
+//            "  a = 1/0\n" +
+//            "  BlocklyJavascriptInterface.nprintList(arrs)\n" +
+//            "  BlocklyJavascriptInterface.nprint(arrs[0])\n" +
+//            "  print('Hello World!')";
+
+//    private String blocklyPyCode =
+//            "result = '人之初  性本善  性相近  习相远  苟不教  性乃迁 教之道  贵以专  \\\n" +
+//            "\t昔孟母  择邻处  子不学  断机杼\\\n" +
+//            "\t窦燕山  有义方  教五子  名俱扬  \\\n" +
+//            "\t养不教  父之过 教不严  师之惰   \\\n" +
+//            "\t 子不学 非所宜  幼不学  老何为\\\n" +
+//            "\t 玉不琢  不成器  人不学  不知义  \\\n" +
+//            "     为人子  方少时 亲师友  习礼仪 \\\n" +
+//            "\t香九龄  能温席  孝于亲  所当执\\\n" +
+//            "    融四岁  能让梨  弟于长  宜先知  \\\n" +
+//            "    首孝弟  次见闻 知某数  识某文  \\\n" +
+//            "\t一而十  十而百  百而千  千而万\\\n" +
+//            "    三才者  天地人  三光者  日月星  \\\n" +
+//            "    三纲者  君臣义父子亲  夫妇顺  \\\n" +
+//            "\t曰春夏  曰秋冬  此四时  运不穷\\\n" +
+//            "    曰南北  曰西东  此四方  应乎中 \\\n" +
+//            "    曰水火  木金土此五行  本乎数  \\\n" +
+//            "    曰仁义  礼智信  此五常  不容紊'\n" + "print(result)\n";
+
+//    private String blocklyPyCode = "# -*- coding: UTF-8 -*-\n" +
+//            " \n" +
+//            "# Filename : test.py\n" +
+//            "# author by : www.runoob.com\n" +
+//            " \n" +
+//            "num = float(input('请输入一个数字:3 '))\n" +
+//            "num_sqrt = num ** 0.5\n" +
+//            "print(' %0.3f 的平方根为 %0.3f'%(num ,num_sqrt))\n";
+
+    private String blocklyPyCode = "print(1)\nBlocklyJavascriptInterface.tts(1)\n"
+            + "BlocklyJavascriptInterface.tts('msg')\n"
+            +"BlocklyJavascriptInterface.tts(BlocklyJavascriptInterface.PI)\n"
+            +"a = BlocklyJavascriptInterface.log10(-1)\n"
+            +"print(a)\n"
+            +"BlocklyJavascriptInterface.t(a)\n"
+            ;
 
     /**
      * 在Service中运行py
+     *
      * @param view
      */
     public void runPyInService(View view) {
+
         Message obtain = Message.obtain();
         Bundle bundle = new Bundle();
         Log.e(TAG, "执行死循环代码");
@@ -227,16 +272,17 @@ public class MainActivity extends Activity {
 
     /**
      * 杀掉进程
+     *
      * @param view
      */
-    public void finishProcess(View view) {
+    public static void finishProcess(View view) {
         Log.e(TAG, "杀死进程");
         killProcess("com.baidu.pythoncompiler.remote");
     }
 
-    private void killProcess(String killName) {
+    private static void killProcess(String killName) {
         // 获取一个ActivityManager 对象
-        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager activityManager = (ActivityManager) Host.getSystemService(Context.ACTIVITY_SERVICE);
         // 获取系统中所有正在运行的进程
         List<ActivityManager.RunningAppProcessInfo> appProcessInfos = activityManager
                 .getRunningAppProcesses();
@@ -251,9 +297,10 @@ public class MainActivity extends Activity {
 
     /**
      * 根据要杀死的进程id执行Shell命令已达到杀死特定进程的效果
+     *
      * @param pid
      */
-    private void killProcessByPid(int pid) {
+    private static void killProcessByPid(int pid) {
         String command = "kill -9 " + pid + "\n";
         Runtime runtime = Runtime.getRuntime();
         Process proc;

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.baidu.pythoncompiler.tset.TouchEventActivity">
+
+
+    <!--<ScrollView-->
+        <!--android:id="@+id/scroll"-->
+        <!--android:background="@color/colorAccent"-->
+        <!--android:layout_centerInParent="true"-->
+        <!--android:layout_width="200dp"-->
+        <!--android:layout_height="100dp">-->
+
+
+
+
+    <!--<TextView-->
+        <!--android:id="@+id/tv_move"-->
+        <!--android:layout_width="200dp"-->
+        <!--android:layout_height="100dp"-->
+        <!--android:text="print('1. 开始拉代码 点击结束进行标记位设置 2. Print 和 error 分开显示问题 + 展示完之后消失问题 3. 文案改成 加载代码 4. 返回按钮放在controller中 5. 图形化编程 不显示报错日志  6. 强制结束清空输出控制台内容   ok 7. 语音识别默认10s  最大限度60s  ok 8. 语音播放tts(Object) ok 9. 日志输出框滑动和点击冲突 10. 人脸识别 调用一次 识别一次 ok')" />-->
+    <!--</ScrollView>-->
+
+    <!--<com.baidu.pythoncompiler.tset.MyRel-->
+        <!--android:id="@+id/myrel"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent" >-->
+
+        <!--<Button-->
+            <!--android:layout_centerInParent="true"-->
+            <!--android:onClick="test"-->
+            <!--android:text="adfadfadf"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" />-->
+
+    <!--</com.baidu.pythoncompiler.tset.MyRel>-->
+
+    <com.baidu.pythoncompiler.tset.EmotionView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></com.baidu.pythoncompiler.tset.EmotionView>
+
+</RelativeLayout>

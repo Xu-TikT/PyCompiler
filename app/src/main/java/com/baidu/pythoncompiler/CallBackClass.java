@@ -44,4 +44,23 @@ public class CallBackClass {
         }
         return 20;
     }
+
+    public int faceDeceted(int a, int b, int c) {
+        System.out.print("a:" + a + "\tb:" + b + "\tc:" + c);
+        try {
+            Thread.sleep(2000);
+            Toast.makeText(MainActivity.Host, "人脸检测返回成功", Toast.LENGTH_SHORT).show();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return 20;
+    }
+
+    public void tts(String msg) {
+        LogUtil.loge("调用这个方法String类型：" + msg);
+    }
+
+    public void tts(int msg) {
+        LogUtil.loge("调用这个方法Int类型：" + msg);
+    }
 }
